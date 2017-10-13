@@ -115,7 +115,7 @@ const update = () => { // Updates draw/game data for all connected clients
   }
   for (let i = 0; i < keys.length; i++) {
     draws[keys[i]].lastUpdate = time;
-    if (draws[keys[i]].isBlock != -1) {
+    if (draws[keys[i]].isBlock !== -1) {
       draws[keys[i]].y += draws[keys[i]].speed;
     }
     if (draws[keys[i]].y >= 550) {
