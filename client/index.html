@@ -32,6 +32,10 @@
         let userWidth = 20;
         let userHeight = 40;
         
+        let userHit = false;
+        
+        let bgColors = [];
+        
         let keyState = {};    
         window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
         window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
@@ -77,13 +81,25 @@
             userY < y + height &&
             userHeight + userY > y)
             {
-                socket.emit('resetPoints',  user); 
+                socket.emit('resetPoints',  {name: user, color: userColor}); 
+            }
+        };
+        
+        const setBGColor = (col) => { //Changes the background color of the game
+            if(!bgColors.includes(col))
+            {
+                bgColors.push(col);
             }
         };
         
         const draw = () => { //Handles drawing client data
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.strokeRect(0,0,512,512);
+          if(bgColors.length > 0){
+            let nextColor = bgColors.pop();
+            ctx.fillStyle = nextColor;
+            ctx.fillRect(0, 0, 512, 512);
+          }
+          ctx.strokeRect(0,0,512,512);   
           keyPress();
           let userDraw = "";
           let keys = Object.keys(draws);
@@ -164,7 +180,10 @@
                     draws[data[i].name] = data[i].coords;
                 }
                 draw();
-            });           
+            });   
+            socket.on('setBGColor', (data) => {
+                setBGColor(data);
+            });              
         };
         
         const init = () => { //Handles initializing  client

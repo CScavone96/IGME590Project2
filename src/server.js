@@ -99,7 +99,8 @@ const onJoined = (sock) => { //Handles player joining and rejects duplicate name
 };
 
 const resetPoints = (data) =>{ //Sets points of player to zero
-    points[data] = 0;
+    points[data.name] = 0;
+    io.sockets.in('room1').emit('setBGColor', data.color);    
 };
 
 const update = () => { //Updates draw/game data for all connected clients
