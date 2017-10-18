@@ -198,10 +198,9 @@
                 playerList.innerHTML = data;
             });
             socket.on('drawUpdate', (data) => {
-                draws = {};
                 let drawData = data.draws;
                 for (let i = 0; i < drawData.length; i++){
-                    if(drawData[i].name != socket.name){
+                    if(drawData[i].name != user){
                         draws[drawData[i].name] = drawData[i].coords;
                     }
                 }
