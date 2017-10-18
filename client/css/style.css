@@ -1,0 +1,42 @@
+#blockCanvas {
+    padding: 0;
+    margin: auto;
+    display: block;
+}
+#center {
+    text-align: center;
+}
+#controls{
+    display: inline-block;
+}
+#title{
+    font-family: 'Press Start 2P', cursive;
+    display: inline-block;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 175%;
+}
+#playerDiv{
+    margin-left: 3%;
+}
+body{
+    font-family: 'Roboto', sans-serif;
+}
+#diffProgress {
+    width: 512px;
+    background-color: #cbd1db;
+    margin: auto;
+}
+#diffLabel{
+    position:relative;
+    text-align: center;
+    z-index: 10;
+    top: -15px;
+    line-height:0px;
+}
+#diffBar {
+    width: 0%;
+    height: 30px;
+    line-height: 30px;
+    background-color: green;
+}

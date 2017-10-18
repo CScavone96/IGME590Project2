@@ -3,6 +3,7 @@
 <head>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P|Roboto" rel="stylesheet">
     <script type="text/babel" >
         "use strict";
         
@@ -36,7 +37,7 @@
         
         let bgColors = [];
         
-        let keyState = {};    
+        let keyState = {};
         window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
         window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
                 
@@ -51,7 +52,13 @@
             if(userFocus){
                 if (keyState[39] || keyState[68]) {
                     let time = new Date().getTime();
-                    let xPos = draws[user].x + 3;
+                    let xPos = userX;
+                    if(userX+3 < 511-userWidth){
+                        xPos = draws[user].x + 3;
+                    }
+                    else{
+                        xPos = 511-userWidth;
+                    }
                     userX = xPos;
                     let yPos = bottom-draws[user].height;
                     userY = yPos;
@@ -61,7 +68,13 @@
 
                 if (keyState[37] || keyState[65]) {
                     let time = new Date().getTime();
-                    let xPos = draws[user].x - 3;
+                    let xPos = userX;
+                    if(userX-3 > 1){
+                        xPos = draws[user].x - 3;
+                    }
+                    else{
+                        xPos = 1;
+                    }
                     userX = xPos;                   
                     let yPos = bottom-draws[user].height;
                     userY = yPos;
@@ -92,10 +105,16 @@
             }
         };
         
+        const updateDifficultyBar = (difficulty) => { //Changes the background color of the game
+            let elem = document.getElementById("diffBar"); 
+            let width = difficulty;
+            elem.style.width = width + '%'; 
+        };
+        
         const draw = () => { //Handles drawing client data
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           if(bgColors.length > 0){
-            let nextColor = bgColors.pop();
+            let nextColor = bgColors.shift();
             ctx.fillStyle = nextColor;
             ctx.fillRect(0, 0, 512, 512);
           }
@@ -150,6 +169,8 @@
             socket.on('connect', () => {
                 user = document.querySelector("#username").value;
                 userColor = document.querySelector("#colorid").value;
+                let elem = document.getElementById("diffBar"); 
+                elem.style.backgroundColor = userColor;
                 if(!user){
                     user = 'unknown'
                 }
@@ -169,6 +190,8 @@
             userX = xPos;
             let yPos = bottom-userHeight;
             userY = yPos;
+            let controls = document.getElementById("controls");
+            controls.style.display = "none";
             draws[user] = {name: user, lastUpdate: time, x: xPos, y: yPos, width: userWidth, height: userHeight, isBlock: -1, color: userColor};   
             socket.emit('addPlayer',  draws[user]);    
             socket.on('clientUpdate', (data) => {
@@ -176,9 +199,12 @@
             });
             socket.on('drawUpdate', (data) => {
                 draws = {};
-                for (let i = 0; i < data.length; i++){
-                    draws[data[i].name] = data[i].coords;
+                let drawData = data.draws;
+                for (let i = 0; i < drawData.length; i++){
+                    draws[drawData[i].name] = drawData[i].coords;
                 }
+                let difficulty = data.diff;
+                updateDifficultyBar(difficulty);
                 draw();
             });   
             socket.on('setBGColor', (data) => {
@@ -202,17 +228,32 @@
             modifyFocus(true);
         });
     </script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-    <label for="user">Username:</label>
-	<input id="username" name="user" type="text"/>
-    <label for="color">Color:</label>
-    <input id="colorid" name="color"type="color" value="#ff0000">
-	<input id="connect" type='button' value='connect'/>
+    <div id="center">
+        <div id="title">
+            <label>Falling Blocks Online</label>
+        </div>
+        <br/>
+        <div id="controls">
+            <label for="user">Username:</label>
+            <input id="username" name="user" type="text"/>
+            <label for="color">Color:</label>
+            <input id="colorid" name="color"type="color" value="#ff0000">
+            <input id="connect" type='button' value='connect'/>
+        </div>
+    </div>
 	<br/>
     <canvas id="blockCanvas" height="512" width="512">No canvas</canvas>
+    <div id="diffProgress">
+        <div id="diffBar"></div>
+        <div id="diffLabel">Difficulty</div>
+    </div>
     <br/>
-    <label>Player List</label>
-    <ul id="playerList">No players</ul>
+    <div id="playerDiv">
+        <label>Player List</label>
+        <ul id="playerList">No players</ul>
+    </div>
 </body>
 </html>

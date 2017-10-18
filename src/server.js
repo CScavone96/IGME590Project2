@@ -6,9 +6,20 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const index = fs.readFileSync(`${__dirname}/../client/index.html`);
 
+const cssFile = fs.readFileSync(`${__dirname}/../client/css/style.css`);
+
 const onRequest = (request, response) => {
-  response.writeHead(200, { ContentType: 'text/html' });
-  response.write(index);
+  console.log(request.url);
+  switch (request.url) {
+    case '/css/style.css':
+      response.writeHead(200, { ContentType: 'text/css' });
+      response.write(cssFile);
+      break;
+    default:
+      response.writeHead(200, { ContentType: 'text/html' });
+      response.write(index);
+      break;
+  }
   response.end();
 };
 
@@ -26,7 +37,9 @@ const points = {};
 
 const draws = {};
 
-const difficulty = 0.92;
+const minDifficulty = 0.02;
+const maxDifficulty = 0.075;
+let difficulty = minDifficulty;
 
 let blockCount = 0;
 
@@ -36,7 +49,7 @@ const emitBlock = () => { // Emits new random block to all players
   const xSize = Math.floor((Math.random() * (50 - 25)) + 25);
   const ySize = Math.floor((Math.random() * (50 - 25)) + 25);
   const yPos = 0 - ySize;
-  const newSpeed = Math.floor((Math.random() * 3)) + 1;
+  const newSpeed = (Math.floor((Math.random() * 95)) + 25) * difficulty;
   newBlock = { x: xPos,
     y: yPos,
     width: xSize,
@@ -98,8 +111,15 @@ const onJoined = (sock) => { // Handles player joining and rejects duplicate nam
   });
 };
 
+const addPoints = (value) => {
+    points[value.name] += Math.round(100 * difficulty);
+};
+
 const resetPoints = (data) => { // Sets points of player to zero
   points[data.name] = 0;
+  if (difficulty > minDifficulty) {
+    difficulty -= (0.00015 / users.length);
+  }
   io.sockets.in('room1').emit('setBGColor', data.color);
 };
 
@@ -109,9 +129,14 @@ const update = () => { // Updates draw/game data for all connected clients
   const keys = Object.keys(draws);
   const drawData = [];
   if (users.length > 0) {
-    if (r < 1 - difficulty) {
+    if (difficulty < maxDifficulty) {
+      difficulty += 0.000007;
+    }
+    if (r > 1 - difficulty) {
       emitBlock();
     }
+  } else {
+    difficulty = minDifficulty;
   }
   for (let i = 0; i < keys.length; i++) {
     draws[keys[i]].lastUpdate = time;
@@ -121,9 +146,7 @@ const update = () => { // Updates draw/game data for all connected clients
     if (draws[keys[i]].y >= 550) {
       deleteBlock(keys[i]);
       delete draws[keys[i]];
-      users.forEach((element) => {
-        points[element.name]++;
-      });
+      users.forEach(addPoints);
     } else {
       const newDraw = { name: keys[i], coords: draws[keys[i]] };
       drawData.push(newDraw);
@@ -131,7 +154,7 @@ const update = () => { // Updates draw/game data for all connected clients
     }
   }
   emitPlayers();
-  io.sockets.in('room1').emit('drawUpdate', drawData);
+  io.sockets.in('room1').emit('drawUpdate', { draws: drawData, diff: (100 / (maxDifficulty - minDifficulty)) * (difficulty - minDifficulty) });
 };
 
 io.sockets.on('connection', (socket) => { // Listens for client emits
