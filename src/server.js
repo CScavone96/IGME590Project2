@@ -159,11 +159,6 @@ const update = () => { // Updates draw/game data for all connected clients
 
 io.sockets.on('connection', (socket) => { // Listens for client emits
   onJoined(socket);
-  socket.on('blockClicked', (name) => {
-    points[name]++;
-    emitBlock(socket);
-    emitPlayers(socket);
-  });
   socket.on('addPlayer', (data) => {
     draws[data.name] = data;
   });
