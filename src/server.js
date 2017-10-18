@@ -118,7 +118,7 @@ const addPoints = (value) => { // Add points, scaling by difficulty
 const resetPoints = (data) => { // Sets points of player to zero
   points[data.name] = 0;
   if (difficulty > minDifficulty) {
-    difficulty -= (0.0003 / users.length);
+    difficulty -= (0.0009 / users.length);
   }
   io.sockets.in('room1').emit('setBGColor', data.color);
 };
