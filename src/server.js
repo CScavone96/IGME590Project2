@@ -96,7 +96,7 @@ const onJoined = (sock) => { // Handles player joining and rejects duplicate nam
       emitPlayers(socket);
       socket.emit('onJoined', data);
       socket.on('disconnect', () => {
-        console.log(users);
+        io.sockets.in('room1').emit('removePlayer', socket.name);
         const userInd = users.indexOf(socket.name);
         users.splice(userInd, 1);
         emitPlayers(socket);
@@ -111,8 +111,8 @@ const onJoined = (sock) => { // Handles player joining and rejects duplicate nam
   });
 };
 
-const addPoints = (value) => {
-    points[value.name] += Math.round(100 * difficulty);
+const addPoints = (value) => { // Add points, scaling by difficulty
+  points[value.name] += Math.round(100 * difficulty);
 };
 
 const resetPoints = (data) => { // Sets points of player to zero
