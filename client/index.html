@@ -131,9 +131,9 @@
             {
                 if(keys[i] != user)
                 {
-                ctx.fillStyle = drawCall.color;
-                ctx.strokeRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
-                ctx.fillRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
+                    ctx.fillStyle = drawCall.color;
+                    ctx.strokeRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
+                    ctx.fillRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
                 }
                 else
                 {
@@ -201,7 +201,9 @@
                 draws = {};
                 let drawData = data.draws;
                 for (let i = 0; i < drawData.length; i++){
-                    draws[drawData[i].name] = drawData[i].coords;
+                    if(drawData[i].name != socket.name){
+                        draws[drawData[i].name] = drawData[i].coords;
+                    }
                 }
                 let difficulty = data.diff;
                 updateDifficultyBar(difficulty);
